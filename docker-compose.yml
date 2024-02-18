@@ -1,0 +1,61 @@
+version: '3.9'
+services:
+
+  spring-app:
+    image: 'spring-app'
+    container_name: spring-app
+    depends_on:
+      - 'postgres'
+      - 'minio'
+    ports:
+      - '8080:8080'
+    networks:
+      - localnet
+#    restart: unless-stopped
+
+  angular-app:
+    image: 'angular-app'
+    container_name: angular-app
+    ports:
+      - '4200:80'
+    networks:
+      - localnet
+    restart: unless-stopped
+
+  postgres:
+    image: 'postgres:15'
+    container_name: 'postgres'
+    ports:
+      - "5432:5432"
+    environment:
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=1234'
+      - 'POSTGRES_DB=KovmakTV'
+    networks:
+      - localnet
+    restart: always
+
+  minio:
+    image: 'quay.io/minio/minio'
+    container_name: 'minio'
+    ports:
+      - '9000:9000'
+      - '9090:9090'
+    volumes:
+      - minio-data:/data
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+    command: server /data --console-address ":9090"
+    networks:
+      - localnet
+    restart: unless-stopped
+
+networks:
+  localnet:
+    driver: bridge
+    name: localnet
+
+volumes:
+  minio-data:
+    driver: local

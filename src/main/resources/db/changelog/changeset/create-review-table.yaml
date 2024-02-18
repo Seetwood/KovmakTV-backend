@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table
+      author: seetwood
+      changes:
+        - createTable:
+            tableName: reviews
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: header
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: text_review
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: rating
+                  type: varchar(200)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: film_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_review_film_id
+                    nullable: false
+                    references: films(id)
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_user_film_id
+                    nullable: false
+                    references: users(id)

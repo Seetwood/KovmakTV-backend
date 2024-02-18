@@ -14,6 +14,7 @@ public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique=true)
     private String genreName;
     public Genre(String genreName) {
         this.genreName = genreName;

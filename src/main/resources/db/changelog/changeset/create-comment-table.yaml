@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table
+      author: seetwood
+      changes:
+        - createTable:
+            tableName: comments
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: text_comment
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_comment_id
+                  type: bigint
+                  constraints:
+                    nullable: true
+              - column:
+                  name: review_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_comment_review_id
+                    nullable: false
+                    references: reviews(id)
+              - column:
+                  name: sender_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_comment_user_id
+                    nullable: false
+                    references: users(id)

@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import dev.vorstu.db.entities.auth.AuthUserEntity;
 import dev.vorstu.db.enums.RoleUser;
 import dev.vorstu.db.repositories.AuthUserRepository;
+import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.UserSignUpDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
@@ -29,7 +30,7 @@ import static dev.vorstu.db.config.SecurityConfig.passwordEncoder;
 public class AuthController {
 
     @Autowired
-    AuthUserRepository authUserRepository;
+    UserService userService;
 
     @GetMapping("currentUser")
     @ResponseBody
@@ -48,21 +49,8 @@ public class AuthController {
         securityContextLogoutHandler.logout(request, response, null);
         return user;
     }
-
     @PostMapping("register")
-    public String registerUser(@RequestBody UserSignUpDto newUser) {
-        if (authUserRepository.existsByUsername(newUser.getUsername())) {
-            return "Пользователь с таким username уже существует";
-        }
-        AuthUserEntity user = new AuthUserEntity(
-                newUser.getUsername(),
-                newUser.getPassword(),
-                newUser.getName(),
-                newUser.getSurname(),
-                RoleUser.USER
-        );
-        authUserRepository.save(user);
-
-        return null;
+    public UserSignUpDto registerUser(@RequestBody UserSignUpDto newUser) {
+        return userService.createUser(newUser);
     }
 }

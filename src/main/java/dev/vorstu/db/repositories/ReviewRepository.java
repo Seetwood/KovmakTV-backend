@@ -22,5 +22,6 @@
         List<Review> findAllByUserUsernameAndStatusIn(String username, List<ReviewStatus> reviewStatuses);
         Optional<Review> findByFilmIdAndUserId(Long filmId, Long userId);
         @EntityGraph(attributePaths = "commentList")
-        Review findReviewById(Long reviewId);
+        Optional<Review> findReviewById(Long reviewId);
+
     }

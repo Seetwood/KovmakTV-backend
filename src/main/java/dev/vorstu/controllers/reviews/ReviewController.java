@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -50,27 +51,24 @@ public class ReviewController {
     }
 
     @PostMapping("reviews/film/{filmId}")
-    public void addReview(@PathVariable Long filmId, Principal principal, @RequestBody ReviewDto reviewDto) {
+    public void createReview(@PathVariable Long filmId, Principal principal, @RequestBody ReviewDto reviewDto) {
         reviewService.createReview(filmId, principal, reviewDto);
     }
 
     @PutMapping("profile/review/{userId}/{filmId}")
-        public Long updateReviewText(@PathVariable Long filmId, @PathVariable Long userId, Principal principal, @RequestBody Review newTextReview) {
+        public Long updateReviewText(@PathVariable Long filmId, @PathVariable Long userId, Principal principal, @RequestBody ReviewDto newTextReview) {
         reviewService.updateReviewText(filmId, userId, principal, newTextReview);
         return userId;
     }
-
+    @PreAuthorize("hasAnyAuthority('SUPER_USER')")
     @PutMapping("reviews/{filmId}/{userId}/{status}")
-    public Long reviewApproved(@PathVariable Long filmId, @PathVariable Long userId, @PathVariable ReviewStatus status, Principal principal) {
-        reviewService.updateReviewStatus(filmId, userId, principal, status);
+    public Long reviewApproved(@PathVariable Long filmId, @PathVariable Long userId, @PathVariable ReviewStatus status) {
+        reviewService.updateReviewStatus(filmId, userId, status);
         return userId;
     }
 
-
-//    @MessageMapping("/comments/{reviewId}")
-//    @SendTo("/topic/comments/{reviewId}")
-//    public String handleComment(@PathVariable Long reviewId, @RequestBody CommentDto commentDto) {
-//        // Обработка комментария
-//        return "Новый комментарий добавлен";
-//    }
+    @DeleteMapping("reviews/{userId}/{filmId}")
+    public void deleteReview(@PathVariable Long userId, @ PathVariable Long filmId) {
+        reviewService.deleteReview(userId, filmId);
+    }
 }

@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: update-data-users
+      author: seetwood
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO users (name, surname, role, username, password)
+              VALUES ('Matvey', 'Kolmakov', 'SUPER_USER', 'seetwood', '$2a$12$th0oru3UY6mXcjk10V3Bo.xCs1gao20MzVWtvdJ7R4q8mdfEgAhvq'),
+                     ('Maria', 'Kovalenko', 'SUPER_USER', 'amori', '$2a$10$cvQaxl/K4Q5XwAPfM5hPA.eZ1M1xQm/wPusg4beHTw7tESrCdb87W'),
+                     ('Dmitry', 'Rogachev', 'USER', 'dimroo', '$2a$10$3Pkl/6oPfGs6wqEGiHvASecss.gmL.hzlKin4UaDubGlQ0aLiixja');

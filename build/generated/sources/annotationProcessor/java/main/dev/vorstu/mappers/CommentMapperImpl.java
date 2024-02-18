@@ -9,7 +9,7 @@ import javax.annotation.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-01-25T13:08:54+0300",
+    date = "2024-02-18T15:23:24+0300",
     comments = "version: 1.4.2.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.2.jar, environment: Java 1.8.0_382 (Amazon.com Inc.)"
 )
 public class CommentMapperImpl implements CommentMapper {
@@ -31,6 +31,23 @@ public class CommentMapperImpl implements CommentMapper {
         commentDto.setChildComments( commentListToCommentDtoList( source.getChildComments() ) );
 
         return commentDto;
+    }
+
+    @Override
+    public Comment toEntity(CommentDto commentDto) {
+        if ( commentDto == null ) {
+            return null;
+        }
+
+        Comment comment = new Comment();
+
+        comment.setId( commentDto.getId() );
+        comment.setTextComment( commentDto.getTextComment() );
+        comment.setReviewId( commentDto.getReviewId() );
+        comment.setParentCommentId( commentDto.getParentCommentId() );
+        comment.setChildComments( commentDtoListToCommentList( commentDto.getChildComments() ) );
+
+        return comment;
     }
 
     private String sourceSenderName(Comment comment) {
@@ -71,6 +88,19 @@ public class CommentMapperImpl implements CommentMapper {
         List<CommentDto> list1 = new ArrayList<CommentDto>( list.size() );
         for ( Comment comment : list ) {
             list1.add( toDto( comment ) );
+        }
+
+        return list1;
+    }
+
+    protected List<Comment> commentDtoListToCommentList(List<CommentDto> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<Comment> list1 = new ArrayList<Comment>( list.size() );
+        for ( CommentDto commentDto : list ) {
+            list1.add( toEntity( commentDto ) );
         }
 
         return list1;

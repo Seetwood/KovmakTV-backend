@@ -19,7 +19,4 @@ public class ReviewDto {
 
     private List<CommentDto> comments;
 
-//    public void setComments(Lst<CommentDtoi> commentDtos) {
-//
-//    }
 }

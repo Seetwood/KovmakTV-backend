@@ -21,7 +21,6 @@ public class GenreController {
 
     @GetMapping()
     public List<GenreDto> getGenres() {
-
         return genreRepository.findAll().stream()
                 .map(GenreMapper.MAPPER::toDto)
                 .collect(Collectors.toList());
@@ -29,16 +28,11 @@ public class GenreController {
 
     @PostMapping()
     public GenreDto addGenre(@RequestBody GenreDto genreDto) {
-        return genreService.addGenre(genreDto);
+        return genreService.createGenre(genreDto);
     }
 
     @PutMapping("/{id}")
     public GenreDto updateGenre(@PathVariable Long id, @RequestBody GenreDto genreDto) {
         return genreService.updateGenre(id, genreDto);
-    }
-
-    @DeleteMapping("/{id}")
-    public Long deleteGenre(@PathVariable Long id) {
-        return genreService.DeleteGenre(id);
     }
 }

@@ -1,6 +1,5 @@
 package dev.vorstu.controllers;
 
-import dev.vorstu.db.repositories.AuthUserRepository;
 import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.UserSignUpDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,10 @@ public class UserController {
         return userService.updateUser(authentication, updateUser);
     }
     @DeleteMapping("/user")
-    public String deleteAccount(Principal user) {
-        return userService.deleteAccount(user);
+    public void deleteAccount(Principal user) {
+        userService.deleteUser(user);
     }
+
+
+
 }

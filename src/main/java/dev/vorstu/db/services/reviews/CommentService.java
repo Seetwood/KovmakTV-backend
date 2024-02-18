@@ -2,17 +2,17 @@ package dev.vorstu.db.services.reviews;
 
 import dev.vorstu.db.entities.auth.AuthUserEntity;
 import dev.vorstu.db.entities.reviews.Comment;
+import dev.vorstu.db.entities.reviews.Review;
 import dev.vorstu.db.repositories.CommentRepository;
 import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.CommentDto;
+import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.CommentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.security.Principal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -20,14 +20,22 @@ public class CommentService {
     private CommentRepository commentRepository;
     @Autowired
     private UserService userService;
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
 
     public void createComment(Long reviewId, Long parentCommentId, CommentDto commentDto, Principal sender) {
         AuthUserEntity senderId = userService.getUserByUsername(sender.getName());
-        Comment newComment = new Comment(senderId.getId(), reviewId, commentDto.getTextComment(), parentCommentId);
-        commentRepository.save(newComment);
 
-        messagingTemplate.convertAndSend("/topic/comments/" + reviewId, "Новый комментарий добавлен");
+        Comment newComment = CommentMapper.MAPPER.toEntity(commentDto);
+        newComment.setSenderId(senderId.getId());
+        newComment.setReviewId(reviewId);
+        newComment.setParentCommentId(parentCommentId);
+        commentRepository.save(newComment);
     }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment is not found"));
+        commentRepository.deleteById(comment.getId());
+    }
+
 }

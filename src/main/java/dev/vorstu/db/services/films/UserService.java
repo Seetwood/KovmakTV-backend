@@ -1,9 +1,17 @@
 package dev.vorstu.db.services.films;
 
 import dev.vorstu.db.entities.auth.AuthUserEntity;
+import dev.vorstu.db.entities.films.Film;
+import dev.vorstu.db.enums.RoleUser;
 import dev.vorstu.db.repositories.AuthUserRepository;
 import dev.vorstu.dto.UserSignUpDto;
+import dev.vorstu.exception.AlreadyExistsException;
+import dev.vorstu.exception.NotFoundException;
+import dev.vorstu.mappers.FilmMapper;
+import dev.vorstu.mappers.UserMapper;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -17,39 +25,40 @@ public class UserService {
 
     public AuthUserEntity getUserByUsername(String username) {
         return authUserRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
-    }
-    public AuthUserEntity findByUserId(Long userId){
-        return authUserRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("User is not found"));
     }
 
-    public UserSignUpDto getUser(Authentication authentication) {
+    public UserSignUpDto getUser(Authentication  authentication) {
         String username = authentication.getName();
-        AuthUserEntity currentUser = authUserRepository.findByUsername(username).get();
-        UserSignUpDto userDto = new UserSignUpDto();
-        userDto.setId(currentUser.getId());
-        userDto.setUsername(currentUser.getUsername());
-        userDto.setName(currentUser.getName());
-        userDto.setSurname(currentUser.getSurname());
-        return userDto;
+        return UserMapper.MAPPER.toDto(getUserByUsername(username));
+    }
+
+    public UserSignUpDto createUser(UserSignUpDto newUser) {
+        try {
+            AuthUserEntity user = new AuthUserEntity(
+                    newUser.getUsername(),
+                    newUser.getPassword(),
+                    newUser.getName(),
+                    newUser.getSurname(),
+                    RoleUser.USER
+            );
+            authUserRepository.save(user);
+            return UserMapper.MAPPER.toDto(user);
+        }
+        catch (ConstraintViolationException | DataIntegrityViolationException e) {
+            throw new AlreadyExistsException("username already exists");
+        }
     }
 
     public UserSignUpDto updateUser(Authentication authentication, UserSignUpDto updateUser) {
-        String username = authentication.getName();
-        AuthUserEntity user = authUserRepository.findByUsername(username).orElse(null);
-        if (user != null) {
-            user.setName(updateUser.getName());
-            user.setSurname(updateUser.getSurname());
-            authUserRepository.save(user);
-            return updateUser;
-        }
-        return null;
+        AuthUserEntity user = getUserByUsername(authentication.getName());
+        UserMapper.MAPPER.updateUser(updateUser, user);
+        authUserRepository.save(user);
+        return updateUser;
     }
     @Transactional
-    public String deleteAccount(Principal user) {
+    public void deleteUser(Principal user) {
         String username = user.getName();
         authUserRepository.deleteByUsername(username);
-        return "Аккаунт успешно удален";
     }
 }

@@ -1,12 +1,14 @@
 package dev.vorstu.mappers;
 
+import dev.vorstu.db.entities.auth.AuthUserEntity;
+import dev.vorstu.db.entities.films.Film;
 import dev.vorstu.db.entities.reviews.Review;
 import dev.vorstu.dto.ReviewDto;
 import javax.annotation.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-01-25T13:08:54+0300",
+    date = "2024-02-18T15:23:24+0300",
     comments = "version: 1.4.2.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.2.jar, environment: Java 1.8.0_382 (Amazon.com Inc.)"
 )
 public class ReviewMapperImpl implements ReviewMapper {
@@ -19,6 +21,9 @@ public class ReviewMapperImpl implements ReviewMapper {
 
         ReviewDto reviewDto = new ReviewDto();
 
+        reviewDto.setSurname( sourceUserSurname( source ) );
+        reviewDto.setName( sourceUserName( source ) );
+        reviewDto.setFilmName( sourceFilmName( source ) );
         reviewDto.setId( source.getId() );
         reviewDto.setFilmId( source.getFilmId() );
         reviewDto.setUserId( source.getUserId() );
@@ -30,20 +35,79 @@ public class ReviewMapperImpl implements ReviewMapper {
     }
 
     @Override
-    public Review toEntity(ReviewDto ReviewDto) {
-        if ( ReviewDto == null ) {
+    public Review toEntity(ReviewDto reviewDto) {
+        if ( reviewDto == null ) {
             return null;
         }
 
         Review review = new Review();
 
-        review.setId( ReviewDto.getId() );
-        review.setFilmId( ReviewDto.getFilmId() );
-        review.setUserId( ReviewDto.getUserId() );
-        review.setTextReview( ReviewDto.getTextReview() );
-        review.setHeader( ReviewDto.getHeader() );
-        review.setStatus( ReviewDto.getStatus() );
+        review.setId( reviewDto.getId() );
+        review.setFilmId( reviewDto.getFilmId() );
+        review.setUserId( reviewDto.getUserId() );
+        review.setTextReview( reviewDto.getTextReview() );
+        review.setHeader( reviewDto.getHeader() );
+        review.setStatus( reviewDto.getStatus() );
 
         return review;
+    }
+
+    @Override
+    public void updateReview(ReviewDto reviewDto, Review review) {
+        if ( reviewDto == null ) {
+            return;
+        }
+
+        review.setId( reviewDto.getId() );
+        review.setFilmId( reviewDto.getFilmId() );
+        review.setUserId( reviewDto.getUserId() );
+        review.setTextReview( reviewDto.getTextReview() );
+        review.setHeader( reviewDto.getHeader() );
+        review.setStatus( reviewDto.getStatus() );
+    }
+
+    private String sourceUserSurname(Review review) {
+        if ( review == null ) {
+            return null;
+        }
+        AuthUserEntity user = review.getUser();
+        if ( user == null ) {
+            return null;
+        }
+        String surname = user.getSurname();
+        if ( surname == null ) {
+            return null;
+        }
+        return surname;
+    }
+
+    private String sourceUserName(Review review) {
+        if ( review == null ) {
+            return null;
+        }
+        AuthUserEntity user = review.getUser();
+        if ( user == null ) {
+            return null;
+        }
+        String name = user.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
+    }
+
+    private String sourceFilmName(Review review) {
+        if ( review == null ) {
+            return null;
+        }
+        Film film = review.getFilm();
+        if ( film == null ) {
+            return null;
+        }
+        String name = film.getName();
+        if ( name == null ) {
+            return null;
+        }
+        return name;
     }
 }

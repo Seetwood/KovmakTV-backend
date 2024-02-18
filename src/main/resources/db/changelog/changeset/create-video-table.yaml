@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table
+      author: seetwood
+      changes:
+        - createTable:
+            tableName: videos
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: trailler_name
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: trailler_url
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: film_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_video_film_id
+                    nullable: false
+                    references: films(id)

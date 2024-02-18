@@ -6,19 +6,19 @@ import dev.vorstu.db.entities.films.Film;
 import dev.vorstu.db.entities.reviews.Comment;
 import dev.vorstu.db.entities.reviews.Review;
 import dev.vorstu.db.enums.ReviewStatus;
-import dev.vorstu.db.enums.RoleUser;
 import dev.vorstu.db.repositories.AuthUserRepository;
 import dev.vorstu.db.repositories.ReviewRepository;
 import dev.vorstu.db.services.films.FilmService;
 import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.CommentDto;
 import dev.vorstu.dto.ReviewDto;
+import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.CommentMapper;
 import dev.vorstu.mappers.ReviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -43,18 +43,14 @@ public class ReviewService {
 
     public Review findByReviewId(Long filmId, Long userId){
          return reviewRepository.findByFilmIdAndUserId(filmId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Рецензия не найдена"));
+                .orElseThrow(() -> new NotFoundException("Review is not found"));
     }
 
     @Transactional
     public ReviewDto getPageReview(Long reviewId) {
-        Review review = reviewRepository.findReviewById(reviewId);
-
+        Review review = reviewRepository.findReviewById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review is not found"));
         ReviewDto reviewDto = ReviewMapper.MAPPER.toDto(review);
-        reviewDto.setName(review.getUser().getName());
-        reviewDto.setSurname(review.getUser().getSurname());
-        reviewDto.setFilmName(review.getFilm().getName());
-
         List<CommentDto> comments = allCommentsForReview(review.getCommentList(), null);
         reviewDto.setComments(comments);
 
@@ -77,61 +73,40 @@ public class ReviewService {
     @Transactional
     public List<ReviewDto> getAllReviewsCreated() {
         return reviewRepository.findAllByStatus(ReviewStatus.CREATED).stream()
-                .map(review -> {
-                    ReviewDto reviewDto = ReviewMapper.MAPPER.toDto(review);
-                    reviewDto.setName(review.getUser().getName());
-                    reviewDto.setSurname(review.getUser().getSurname());
-                    reviewDto.setFilmName(review.getFilm().getName());
-                    return reviewDto;
-                })
+                .map(ReviewMapper.MAPPER::toDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public Page<ReviewDto> getReviewByFilm(Film film, Pageable pageable) {
         return reviewRepository.findAllByFilmAndStatus(film, ReviewStatus.VERIFIED, pageable)
-                .map(review -> {
-                    ReviewDto reviewDto = ReviewMapper.MAPPER.toDto(review);
-                    reviewDto.setName(review.getUser().getName());
-                    reviewDto.setSurname(review.getUser().getSurname());
-                    reviewDto.setFilmName(review.getFilm().getName());
-                    return reviewDto;
-                });
+                .map(ReviewMapper.MAPPER::toDto);
     }
 
     @Transactional
     public List<ReviewDto> getReviewByUserStatus(Principal user, ReviewStatus status) {
         String username = user.getName();
         return reviewRepository.findAllByUserUsernameAndStatusIn(username, Collections.singletonList(status)).stream()
-                .map(review -> {
-                    ReviewDto reviewDto = ReviewMapper.MAPPER.toDto(review);
-                    reviewDto.setName(review.getUser().getName());
-                    reviewDto.setSurname(review.getUser().getSurname());
-                    reviewDto.setFilmName(review.getFilm().getName());
-                    reviewDto.setFilmId(review.getFilmId());
-                    reviewDto.setUserId(review.getUserId());
-                    return reviewDto;
-                })
+                .map(ReviewMapper.MAPPER::toDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public void createReview(Long filmId, Principal principal, ReviewDto reviewDto) {
         AuthUserEntity currentUser = userService.getUserByUsername(principal.getName());
-        Film film = filmService.findById(filmId);
-        Review review = new Review(filmId,currentUser.getId(),reviewDto.getHeader(), reviewDto.getTextReview(), ReviewStatus.CREATED);
-        review.setUser(currentUser);
-        review.setFilm(film);
+        Review review = ReviewMapper.MAPPER.toEntity(reviewDto);
+        review.setFilmId(filmId);
+        review.setUserId(currentUser.getId());
+        review.setStatus(ReviewStatus.CREATED);
         reviewRepository.save(review);
     }
 
-    public void updateReviewText(Long filmId, Long userId, Principal principal, Review newTextReview) {
+    public void updateReviewText(Long filmId, Long userId, Principal principal, ReviewDto newTextReview) {
         Review review = this.findByReviewId(filmId, userId);
         AuthUserEntity user = review.getUser();
         AuthUserEntity currentUser = userService.getUserByUsername(principal.getName());
-        if (currentUser.getId().equals(user.getId()) && review.getStatus() == ReviewStatus.REJECTED) {
-            review.setHeader(newTextReview.getHeader());
-            review.setTextReview(newTextReview.getTextReview());
+        if (currentUser.getId().equals(user.getId())) {
+            ReviewMapper.MAPPER.updateReview(newTextReview, review);
             review.setStatus(ReviewStatus.CREATED);
             reviewRepository.save(review);
         } else {
@@ -139,14 +114,16 @@ public class ReviewService {
         }
     }
 
-    public void updateReviewStatus(Long filmId, Long userId, Principal principal, ReviewStatus status) {
+    @PreAuthorize("hasAuthority('SUPER_USER')")
+    public void updateReviewStatus(Long filmId, Long userId, ReviewStatus status) {
         Review review = findByReviewId(filmId, userId);
-        AuthUserEntity currentUser = userService.getUserByUsername(principal.getName());
-        if (currentUser.getRole() != RoleUser.SUPER_USER) {
-            throw new IllegalArgumentException("Недостаточно прав для изменения статуса рецензии");
-        }
         review.setStatus(status);
         reviewRepository.save(review);
     }
 
+    @Transactional
+    public void deleteReview(Long filmId, Long userId) {
+        Review review = findByReviewId(filmId, userId);
+        reviewRepository.deleteById(review.getId());
+    }
 }

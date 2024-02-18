@@ -10,6 +10,7 @@ import dev.vorstu.dto.FilmDto;
 import dev.vorstu.dto.ImageDto;
 import dev.vorstu.dto.SaveFilm;
 import dev.vorstu.dto.ShortFilmInfo;
+import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.FilmMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,12 @@ public class FilmService {
 
     public Film findById(Long filmId) {
         return filmRepository.findById(filmId)
-                .orElseThrow(() -> new IllegalArgumentException("Фильм не найден"));
+                .orElseThrow(() -> new NotFoundException("film is not found"));
+    }
+
+    public FilmDto getPageFilm(Long filmId) {
+        Film film = this.findById(filmId);
+        return FilmMapper.MAPPER.toFilmDto(film);
     }
 
     @Transactional
@@ -59,6 +65,7 @@ public class FilmService {
             return null;
         };
         return filmRepository.findAll(genreFilter, pageable).map(film -> {
+
             ShortFilmInfo shortFilmInfo = FilmMapper.MAPPER.toShortFilmDto(film);
             if (film.getImagesList() != null && !film.getImagesList().isEmpty()) {
                 ImageDto imageDto = FilmMapper.MAPPER.toImageDto(film.getImagesList().get(0));
@@ -68,27 +75,16 @@ public class FilmService {
         });
     }
 
-
     @Transactional
     public FilmDto createFilm(SaveFilm newFilmSave) {
         Film film = FilmMapper.MAPPER.toEntity(newFilmSave);
-        Film newFilm = new Film(
-                film.getName(),
-                film.getYearOfRelease(),
-                film.getDuration(),
-                film.getDescription(),
-                film.getCountry(),
-                newFilmSave.getGenreId()
-        );
-        Genre genre = genreRepository.findById(newFilmSave.getGenreId()).orElse(null);
-        newFilm.setGenre(genre);
-        newFilm = filmRepository.save(newFilm);
-        String bucketName = newFilm.getId().toString() + "-filmbucket";
-        minioService.createBucket(bucketName);
+        film = filmRepository.save(film);
 
-        saveImages(newFilmSave.getImages(), bucketName, newFilm);
-        saveVideos(newFilmSave.getVideos(), bucketName, newFilm);
-        return FilmMapper.MAPPER.toFilmDto(newFilm);
+        String bucketName = film.getId().toString() + "-filmbucket";
+        minioService.createBucket(bucketName);
+        saveImages(newFilmSave.getImages(), bucketName, film);
+        saveVideos(newFilmSave.getVideos(), bucketName, film);
+        return FilmMapper.MAPPER.toFilmDto(film);
     }
 
     public void saveImages(List<MultipartFile> images, String bucketName, Film film) {
@@ -96,7 +92,8 @@ public class FilmService {
             minioService.uploadFile((ArrayList<MultipartFile>) images, bucketName);
             List<Image> imagesList = new ArrayList<>();
             images.forEach(file -> {
-                Image image = new Image(film.getId(), file.getOriginalFilename(), minioService.getFileUrl(file.getOriginalFilename(), bucketName));
+                String imageUrl = bucketName +"/" + file.getOriginalFilename();
+                Image image = new Image(film.getId(), file.getOriginalFilename(), imageUrl);
                 imagesList.add(image);
             });
             film.setImagesList(imagesList);
@@ -109,7 +106,8 @@ public class FilmService {
             minioService.uploadFile((ArrayList<MultipartFile>) videos, bucketName);
             List<Video> videosList = new ArrayList<>();
             videos.forEach(file -> {
-                Video video = new Video(film.getId(), file.getOriginalFilename(), minioService.getFileUrl(file.getOriginalFilename(), bucketName));
+                String videoUrl = bucketName +"/" + file.getOriginalFilename();
+                Video video = new Video(film.getId(), file.getOriginalFilename(), videoUrl);
                 videosList.add(video);
             });
             film.setVideosList(videosList);
@@ -119,17 +117,10 @@ public class FilmService {
 
     @Transactional
     public FilmDto updateFilm(Long filmId, SaveFilm updatedFilm) {
-        Film oldFilm = filmRepository.findById(filmId).orElseThrow(() -> new IllegalArgumentException("Фильм не найден"));
-
-        oldFilm.setName(updatedFilm.getName());
-        oldFilm.setYearOfRelease(updatedFilm.getYearOfRelease());
-        oldFilm.setDuration(updatedFilm.getDuration());
-        oldFilm.setDescription(updatedFilm.getDescription());
-        oldFilm.setCountry(updatedFilm.getCountry());
-        oldFilm.setGenreId(updatedFilm.getGenreId());
-
-        oldFilm = filmRepository.save(oldFilm);
-        return FilmMapper.MAPPER.toFilmDto(oldFilm);
+        Film film = findById(filmId);
+        FilmMapper.MAPPER.updateFilm(updatedFilm, film);
+        filmRepository.save(film);
+        return FilmMapper.MAPPER.toFilmDto(film);
     }
 
     @Transactional
@@ -145,6 +136,5 @@ public class FilmService {
         minioService.removeBucket(bucketName);
         filmRepository.deleteById(filmId);
         imageRepository.deleteByFilmId(filmId);
-        videoRepository.deleteByFilmId(filmId);
     }
 }

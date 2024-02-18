@@ -1,0 +1,73 @@
+spring:
+  liquibase:
+    enabled: true
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/KovmakTV
+    username: postgres
+    password: 1234
+
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  config:
+    activate:
+      on-profile: development
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+minio:
+  url: http://127.0.0.1:9000
+  accessKey: admin
+  secretKey: password
+  policyJson: "src/main/resources/minio/minioPolicy.json"
+
+---
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: true
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/KovmakTV
+    username: postgres
+    password: 1234
+
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  config:
+    activate:
+      on-profile: docker-compose
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+minio:
+  url: http://minio:9000
+  accessKey: admin
+  secretKey: password
+  policyJson: "/minio/minioPolicy.json"

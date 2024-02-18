@@ -16,7 +16,7 @@ import javax.annotation.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-01-26T16:01:15+0300",
+    date = "2024-02-18T15:23:24+0300",
     comments = "version: 1.4.2.Final, compiler: IncrementalProcessingEnvironment from gradle-language-java-8.2.jar, environment: Java 1.8.0_382 (Amazon.com Inc.)"
 )
 public class FilmMapperImpl implements FilmMapper {
@@ -93,6 +93,21 @@ public class FilmMapperImpl implements FilmMapper {
         film.setGenreId( newFilmSave.getGenreId() );
 
         return film;
+    }
+
+    @Override
+    public void updateFilm(SaveFilm saveFilm, Film film) {
+        if ( saveFilm == null ) {
+            return;
+        }
+
+        film.setId( saveFilm.getId() );
+        film.setName( saveFilm.getName() );
+        film.setYearOfRelease( saveFilm.getYearOfRelease() );
+        film.setDuration( saveFilm.getDuration() );
+        film.setDescription( saveFilm.getDescription() );
+        film.setCountry( saveFilm.getCountry() );
+        film.setGenreId( saveFilm.getGenreId() );
     }
 
     protected GenreDto genreToGenreDto(Genre genre) {

@@ -1,14 +1,11 @@
 package dev.vorstu.db.entities.films;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import dev.vorstu.db.entities.reviews.Review;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "films")
@@ -23,25 +20,24 @@ public class Film {
     private String name;
     private int yearOfRelease;
     private int duration;
+
     @Column(columnDefinition = "TEXT")
     private String description;
     private String country;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "genre_id", insertable = false, updatable = false)
     private Genre genre;
     @Column(name = "genre_id")
     private Long genreId;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "film_id")
+    @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
     private List<Image> imagesList;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "film_id")
+
+    @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
     private List<Video> videosList;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "film_id")
+    @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
     private List<Review> reviewList;
 
     public Film(String name, int yearOfRelease, int duration, String description, String country, Long genreId) {

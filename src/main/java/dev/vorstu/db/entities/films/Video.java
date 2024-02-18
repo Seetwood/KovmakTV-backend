@@ -16,23 +16,14 @@ public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String traillerName;
-
-    @Column(columnDefinition = "TEXT")
     private String traillerUrl;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Film.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "film_id", nullable = false, insertable = false, updatable = false)
     private Film film;
     @Column(name = "film_id")
     private Long filmId;
-
-    public Video(String traillerName, String traillerUrl) {
-        this.traillerName = traillerName;
-        this.traillerUrl = traillerUrl;
-
-    }
 
     public Video(Long filmId, String traillerName, String traillerUrl) {
         this.filmId = filmId;

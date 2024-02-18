@@ -16,22 +16,14 @@ public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String imageName;
-
-    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = Film.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "film_id", nullable = false, insertable = false, updatable = false)
     private Film film;
     @Column(name = "film_id")
     private Long filmId;
-
-    public Image(String imageName, String imageUrl) {
-        this.imageName = imageName;
-        this.imageUrl = imageUrl;
-    }
 
     public Image(Long filmId, String imageName, String imageUrl) {
         this.filmId = filmId;

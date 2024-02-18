@@ -1,11 +1,9 @@
 package dev.vorstu.controllers.films;
 
-import dev.vorstu.db.entities.films.Film;
 import dev.vorstu.db.services.films.FilmService;
 import dev.vorstu.dto.FilmDto;
 import dev.vorstu.dto.SaveFilm;
 import dev.vorstu.dto.ShortFilmInfo;
-import dev.vorstu.mappers.FilmMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +27,7 @@ public class FilmController {
     @GetMapping("id={id}")
     @Transactional
     public FilmDto getPageFilm(@PathVariable Long id) {
-        Film film = filmService.findById(id);
-        return FilmMapper.MAPPER.toFilmDto(film);
+        return filmService.getPageFilm(id);
     }
 
     @PostMapping()

@@ -18,4 +18,8 @@ public class CommentController {
         commentService.createComment(reviewId, parentCommentId, commentDto, sender);
     }
 
+    @DeleteMapping("{commentId}")
+    public void deleteReview(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+    }
 }

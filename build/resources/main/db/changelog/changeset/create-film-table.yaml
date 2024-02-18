@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-table
+      author: seetwood
+      changes:
+        - createTable:
+            tableName: films
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: country
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: year_of_release
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: duration
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: genre_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_film_genre_id
+                    nullable: false
+                    references: genres(id)
