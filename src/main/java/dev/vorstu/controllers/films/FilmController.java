@@ -9,6 +9,9 @@ import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 import javax.transaction.Transactional;
 
+/**
+ * Контроллер, предназначенный для возаимодействия пользователей с фильмами
+ */
 @RestController
 @RequestMapping("api/film/")
 public class FilmController {

@@ -1,17 +1,13 @@
 package dev.vorstu.controllers.reviews;
 
 import dev.vorstu.db.entities.films.Film;
-import dev.vorstu.db.entities.reviews.Review;
 import dev.vorstu.db.enums.ReviewStatus;
-import dev.vorstu.db.repositories.ReviewRepository;
 import dev.vorstu.db.services.reviews.ReviewService;
 import dev.vorstu.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +15,9 @@ import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
 
-
+/**
+ * Контроллер, предназначенный для возаимодействия пользователей с рецензиями
+ */
 @RestController
 @RequestMapping("api/")
 public class ReviewController {

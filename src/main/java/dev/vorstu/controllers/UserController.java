@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
+/**
+ * Контроллер, предназначенный для возаимодействия пользоателя с аккаунтом
+ */
 @RestController
 @RequestMapping("api/profile")
 public class UserController {
@@ -27,7 +30,4 @@ public class UserController {
     public void deleteAccount(Principal user) {
         userService.deleteUser(user);
     }
-
-
-
 }

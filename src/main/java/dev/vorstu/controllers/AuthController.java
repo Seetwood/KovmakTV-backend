@@ -1,15 +1,8 @@
 package dev.vorstu.controllers;
 
 import java.security.Principal;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Status;
-import javax.transaction.Transactional;
-
-import dev.vorstu.db.entities.auth.AuthUserEntity;
-import dev.vorstu.db.enums.RoleUser;
-import dev.vorstu.db.repositories.AuthUserRepository;
 import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.UserSignUpDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static dev.vorstu.db.config.SecurityConfig.passwordEncoder;
 
+/**
+ * Контроллер, предназначенный для аутентификации аккаунта пользователей
+ */
 @RestController
 @RequestMapping("/api/")
 @RequiredArgsConstructor
@@ -35,7 +30,6 @@ public class AuthController {
     @GetMapping("currentUser")
     @ResponseBody
     public Principal user(Principal user) {
-
         log.warn("getUserAuth: " + (user != null ? user.getName() : "null"));
         return user;
     }
@@ -49,6 +43,7 @@ public class AuthController {
         securityContextLogoutHandler.logout(request, response, null);
         return user;
     }
+
     @PostMapping("register")
     public UserSignUpDto registerUser(@RequestBody UserSignUpDto newUser) {
         return userService.createUser(newUser);

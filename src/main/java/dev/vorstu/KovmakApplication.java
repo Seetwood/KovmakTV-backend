@@ -7,17 +7,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.io.IOException;
 
 @SpringBootApplication
-public class VorstuApplication {
+public class KovmakApplication {
 
 	private static Initializer initiator;
 
 	@Autowired
 	public void setInitialLoader(Initializer initiator) {
-		VorstuApplication.initiator = initiator;
+		KovmakApplication.initiator = initiator;
 	}
 
 	public static void main(String[] args) throws IOException {
-		SpringApplication.run(VorstuApplication.class, args);
+		SpringApplication.run(KovmakApplication.class, args);
 
 		initiator.initial();
 	}

@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис Minio для создания и взаимодецствия с файлами мульмимедиа
+ */
 @Slf4j
 @Service
 public class MinioService {
@@ -35,6 +38,10 @@ public class MinioService {
         this.minioClient = minioClient;
     }
 
+    /**
+     * Создание нового бакета для хранения файлов
+     * @param bucketName - Название бакета
+     */
     public void createBucket(String bucketName) {
         try {
             boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
@@ -43,15 +50,20 @@ public class MinioService {
                 policyJson = policyJson.replace("bucketName", bucketName);
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
                 minioClient.setBucketPolicy(SetBucketPolicyArgs.builder().bucket(bucketName).config(policyJson).build());
-                log.info("bucket successfully created.");
+                log.info("Бакет успешно создан.");
             }
         }
         catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException e) {
-            log.error("Error create bucket: {}", e.getMessage());
-            throw new CustomMinioException("Error when creating a bucket: " + e.getMessage());
+            log.error("Ошибка при создании бакета: {}", e.getMessage());
+            throw new CustomMinioException("Ошибка при создании бакета: " + e.getMessage());
         }
     }
 
+    /**
+     * Загрузка новых файлов в сервис Minio
+     * @param files - Список загружаемых файлов
+     * @param bucketName - Название бакета
+     */
     public void uploadFile(ArrayList<MultipartFile> files, String bucketName) {
         files.forEach(file -> {
             try {
@@ -63,12 +75,16 @@ public class MinioService {
                         .build());
             }
             catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException e) {
-                log.error("Error when uploading a file: {}", e.getMessage());
-                throw new CustomMinioException("Error when uploading a file: " + e.getMessage());
+                log.error("Ошибка при загрузке файла : {}", e.getMessage());
+                throw new CustomMinioException("Ошибка при загрузке файла: " + e.getMessage());
             }
         });
     }
 
+    /**
+     * Удаление бакета
+     * @param bucketName - Название бакета
+     */
     public void removeBucket(String bucketName) {
         try {
             minioClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
@@ -79,6 +95,11 @@ public class MinioService {
         }
     }
 
+    /**
+     * Удаление файлов-изображений из сервиса Minio
+     * @param images - Список видео фильма
+     * @param bucketName - Название бакета
+     */
     public void removeImages(List<Image> images, String bucketName) {
         try {
             List<DeleteObject> objects = images.stream()
@@ -97,6 +118,11 @@ public class MinioService {
         }
     }
 
+    /**
+     * Удаление файлов-видео из сервиса Minio
+     * @param videos - Список видео фильма
+     * @param bucketName - Название бакета
+     */
     public void removeVideos(List<Video> videos, String bucketName) {
         try {
             List<DeleteObject> objects = videos.stream()
@@ -110,8 +136,8 @@ public class MinioService {
             }
         }
         catch (MinioException | IOException | InvalidKeyException | NoSuchAlgorithmException e) {
-            log.error("Error deleting videos: {}", e.getMessage());
-            throw new CustomMinioException("Error deleting videos: " + e.getMessage());
+            log.error("Ошибка при удалении файла: {}", e.getMessage());
+            throw new CustomMinioException("Ошибка при удалении файла: " + e.getMessage());
         }
     }
 }

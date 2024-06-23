@@ -25,9 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Service
+/**
+ * Сервис для взаимодействия с фильмами
+ */
 @Slf4j
 @Transactional
+@Service
 public class FilmService {
 
     @Autowired
@@ -45,22 +48,38 @@ public class FilmService {
     @Autowired
     GenreService genreService;
 
+    /**
+     * Получение фильма по его идентификатору
+     * @param filmId - Идентификатор фильма
+     * @return Найденный фильм
+     */
     public Film findById(Long filmId) {
         return filmRepository.findById(filmId)
                 .orElseThrow(() -> new NotFoundException("film is not found"));
     }
 
+    /**
+     * Получение страницы с фильмом
+     * @param filmId - Идентификатор фильма
+     * @return Страница с фильмом
+     */
     public FilmDto getPageFilm(Long filmId) {
         Film film = this.findById(filmId);
         return FilmMapper.MAPPER.toFilmDto(film);
     }
 
+    /**
+     * Получение карточек с фильмами с фильтрацией и без фильтрации по жанру
+     * @param genreName - Название жанра
+     * @param pageable -
+     * @return Страница с карточками фильмов
+     */
     @Transactional
-    public Page<ShortFilmInfo> getShortFilmInfo(String genre, Pageable pageable) {
+    public Page<ShortFilmInfo> getShortFilmInfo(String genreName, Pageable pageable) {
         Specification<ShortFilmInfo> genreFilter = (root, query, criteriaBuilder) -> {
-            if (genre != null && !genre.isEmpty()) {
+            if (genreName != null && !genreName.isEmpty()) {
                 Join<Film, Genre> genreJoin = root.join("genre");
-                return criteriaBuilder.equal(genreJoin.get("genreName"), genre);
+                return criteriaBuilder.equal(genreJoin.get("genreName"), genreName);
             }
             return null;
         };
@@ -75,18 +94,29 @@ public class FilmService {
         });
     }
 
+    /**
+     * Создание нового фильма
+     * @param newFilm - Данные о новом фильме
+     * @return Фильм
+     */
     @Transactional
-    public FilmDto createFilm(SaveFilm newFilmSave) {
-        Film film = FilmMapper.MAPPER.toEntity(newFilmSave);
+    public FilmDto createFilm(SaveFilm newFilm) {
+        Film film = FilmMapper.MAPPER.toEntity(newFilm);
         film = filmRepository.save(film);
 
         String bucketName = film.getId().toString() + "-filmbucket";
         minioService.createBucket(bucketName);
-        saveImages(newFilmSave.getImages(), bucketName, film);
-        saveVideos(newFilmSave.getVideos(), bucketName, film);
+        saveImages(newFilm.getImages(), bucketName, film);
+        saveVideos(newFilm.getVideos(), bucketName, film);
         return FilmMapper.MAPPER.toFilmDto(film);
     }
 
+    /**
+     * Сохранение изображений к фильму
+     * @param images - Список файлов-изображений
+     * @param bucketName - Название бакета для сохранения
+     * @param film - Фильм
+     */
     public void saveImages(List<MultipartFile> images, String bucketName, Film film) {
         if (!images.isEmpty()) {
             minioService.uploadFile((ArrayList<MultipartFile>) images, bucketName);
@@ -101,6 +131,12 @@ public class FilmService {
         }
     }
 
+    /**
+     * Сохранение видео к фильму
+     * @param videos - Список файлов-видео
+     * @param bucketName - Название бакета для сохранения
+     * @param film - Фильм
+     */
     public void saveVideos(List<MultipartFile> videos, String bucketName, Film film) {
         if (!videos.isEmpty()) {
             minioService.uploadFile((ArrayList<MultipartFile>) videos, bucketName);
@@ -115,6 +151,12 @@ public class FilmService {
         }
     }
 
+    /**
+     * Обновление данных о фильме
+     * @param filmId - Идентификатор фильма
+     * @param updatedFilm - Новые данные
+     * @return Обновленный фильм
+     */
     @Transactional
     public FilmDto updateFilm(Long filmId, SaveFilm updatedFilm) {
         Film film = findById(filmId);
@@ -123,6 +165,10 @@ public class FilmService {
         return FilmMapper.MAPPER.toFilmDto(film);
     }
 
+    /**
+     * Удаление фильма
+     * @param filmId - Идентификатор фильма
+     */
     @Transactional
     public void deleteFilm(Long filmId) {
         Film film = findById(filmId);

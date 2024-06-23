@@ -1,10 +1,10 @@
-package dev.vorstu.dto;
+package dev.vorstu.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ErrorMessage {
+public class ErrorMessageDto {
     private String message;
 }

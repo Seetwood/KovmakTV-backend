@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Конфигурация сервиса Minio
+ */
 @Configuration
 public class MinioConfig {
     @Value("${minio.url}")

@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
+/**
+ * Контроллер, предназначенный для возаимодействия пользователей с комментариями
+ */
 @RestController
 @RequestMapping("api/reviews/comments")
 public class CommentController {
