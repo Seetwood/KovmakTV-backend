@@ -4,7 +4,7 @@ import dev.vorstu.db.repositories.GenreRepository;
 import dev.vorstu.db.services.films.GenreService;
 import dev.vorstu.dto.GenreDto;
 import dev.vorstu.mappers.GenreMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,13 +14,11 @@ import java.util.stream.Collectors;
  * Контроллер, предназначенный для возаимодействия пользователей с жанрами
  */
 @RestController
+@AllArgsConstructor
 @RequestMapping("api/film/genres")
 public class GenreController {
-
-    @Autowired
-    private GenreRepository genreRepository;
-    @Autowired
-    private GenreService genreService;
+    private final  GenreRepository genreRepository;
+    private final  GenreService genreService;
 
     @GetMapping()
     public List<GenreDto> getGenres() {

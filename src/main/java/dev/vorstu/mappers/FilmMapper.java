@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Mapper
 public interface FilmMapper {
     FilmMapper MAPPER = Mappers.getMapper(FilmMapper.class);
-    ShortFilmInfo toShortFilmDto(Film source);
+    ShortFilmInfoDto toShortFilmDto(Film source);
     FilmDto toFilmDto(Film source);
     ImageDto toImageDto(Image image);
 
@@ -21,11 +21,11 @@ public interface FilmMapper {
     @Mapping(target = "reviewList",ignore = true)
     @Mapping(target = "imagesList",ignore = true)
     @Mapping(target = "genre",ignore = true)
-    Film toEntity(SaveFilm newFilmSave);
+    Film toEntity(SaveFilmDto newFilmSave);
 
     @Mapping(target = "videosList",ignore = true)
     @Mapping(target = "reviewList",ignore = true)
     @Mapping(target = "imagesList",ignore = true)
     @Mapping(target = "genre",ignore = true)
-    void updateFilm(SaveFilm saveFilm, @MappingTarget Film film);
+    void updateFilm(SaveFilmDto saveFilmDto, @MappingTarget Film film);
 }

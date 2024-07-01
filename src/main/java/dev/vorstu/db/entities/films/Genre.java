@@ -1,22 +1,23 @@
 package dev.vorstu.db.entities.films;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "genres")
-@Getter
-@Setter
+@Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class Genre {
+    /** Идентификатор */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Название */
+    @NonNull
     @Column(unique=true)
     private String genreName;
-    public Genre(String genreName) {
-        this.genreName = genreName;
-    }
 }

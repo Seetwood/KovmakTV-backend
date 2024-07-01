@@ -2,6 +2,7 @@ package dev.vorstu.controllers;
 
 import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.UserSignUpDto;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +13,10 @@ import java.security.Principal;
  * Контроллер, предназначенный для возаимодействия пользоателя с аккаунтом
  */
 @RestController
+@AllArgsConstructor
 @RequestMapping("api/profile")
 public class UserController {
-
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/user")
     public UserSignUpDto getUser(Authentication authentication) {

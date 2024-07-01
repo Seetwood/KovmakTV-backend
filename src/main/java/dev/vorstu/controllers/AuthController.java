@@ -24,8 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
 
     @GetMapping("currentUser")
     @ResponseBody
