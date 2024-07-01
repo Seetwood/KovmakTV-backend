@@ -6,9 +6,9 @@ import dev.vorstu.dto.GenreDto;
 import dev.vorstu.exception.AlreadyExistsException;
 import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.GenreMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +17,9 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class GenreService {
-    @Autowired
-    private GenreRepository genreRepository;
+    private  final GenreRepository genreRepository;
 
     /**
      * Создание нового жанра
@@ -33,7 +33,8 @@ public class GenreService {
             return GenreMapper.MAPPER.toDto(savedGenre);
         }
         catch (ConstraintViolationException | DataIntegrityViolationException e) {
-            throw new AlreadyExistsException("genre already exists");
+            log.warn("Жанр уже существует {}:", e.getMessage());
+            throw new AlreadyExistsException("Жанр уже существует", e.getMessage());
         }
     }
 
@@ -52,8 +53,8 @@ public class GenreService {
             return GenreMapper.MAPPER.toDto(updatedGenre);
         }
         catch (ConstraintViolationException | DataIntegrityViolationException e) {
-            log.error("Жанр уже существует");
-            throw new AlreadyExistsException("Жанр уже существует");
+            log.warn("Жанр уже существует {}:", e.getMessage());
+            throw new AlreadyExistsException("Жанр уже существует", e.getMessage());
         }
     }
 }

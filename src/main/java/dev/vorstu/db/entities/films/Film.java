@@ -1,58 +1,58 @@
 package dev.vorstu.db.entities.films;
 
 import dev.vorstu.db.entities.reviews.Review;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.jetbrains.annotations.NotNull;
+
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "films")
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Название */
+    @NonNull
     private String name;
-    private int yearOfRelease;
-    private int duration;
+    /** Год релиза */
+    private Integer yearOfRelease;
 
+    /** Продолжительность в минутах */
+    private Integer duration;
+
+    /** Описание */
     @Column(columnDefinition = "TEXT")
     private String description;
+    /** Страна производства */
     private String country;
 
+    /** Жанр фильма */
     @ManyToOne
     @JoinColumn(name = "genre_id", insertable = false, updatable = false)
     private Genre genre;
     @Column(name = "genre_id")
     private Long genreId;
 
+    /** Список изображений */
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
     private List<Image> imagesList;
 
+    /** Список видео */
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
     private List<Video> videosList;
 
+    /** Рецензии */
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL)
     private List<Review> reviewList;
 
-    public Film(String name, int yearOfRelease, int duration, String description, String country, Long genreId) {
-        this.name = name;
-        this.yearOfRelease = yearOfRelease;
-        this.duration = duration;
-        this.description = description;
-        this.country = country;
-        this.genreId = genreId;
-    }
-    public Film(String name, int yearOfRelease, int duration, String description, String country) {
-        this.name = name;
-        this.yearOfRelease = yearOfRelease;
-        this.duration = duration;
-        this.description = description;
-        this.country = country;
-    }
+    /** Рейтинг */
+    @Builder.Default
+    private Integer rating = 0;
 }

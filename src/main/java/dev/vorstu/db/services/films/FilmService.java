@@ -8,12 +8,13 @@ import dev.vorstu.db.repositories.*;
 import dev.vorstu.db.services.MinioService;
 import dev.vorstu.dto.FilmDto;
 import dev.vorstu.dto.ImageDto;
-import dev.vorstu.dto.SaveFilm;
-import dev.vorstu.dto.ShortFilmInfo;
+import dev.vorstu.dto.SaveFilmDto;
+import dev.vorstu.dto.ShortFilmInfoDto;
+import dev.vorstu.exception.BusinessException;
 import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.FilmMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -29,24 +30,13 @@ import java.util.List;
  * Сервис для взаимодействия с фильмами
  */
 @Slf4j
-@Transactional
 @Service
+@AllArgsConstructor
 public class FilmService {
-
-    @Autowired
-    private FilmRepository filmRepository;
-    @Autowired
-    private ImageRepository imageRepository;
-    @Autowired
-    private VideoRepository videoRepository;
-    @Autowired
-    GenreRepository genreRepository;
-    @Autowired
-    ReviewRepository reviewRepository;
-    @Autowired
-    MinioService minioService;
-    @Autowired
-    GenreService genreService;
+    private final FilmRepository filmRepository;
+    private final ImageRepository imageRepository;
+    private final  VideoRepository videoRepository;
+    private final MinioService minioService;
 
     /**
      * Получение фильма по его идентификатору
@@ -55,7 +45,7 @@ public class FilmService {
      */
     public Film findById(Long filmId) {
         return filmRepository.findById(filmId)
-                .orElseThrow(() -> new NotFoundException("film is not found"));
+                .orElseThrow(() -> new NotFoundException("Фильм не найден"));
     }
 
     /**
@@ -75,8 +65,8 @@ public class FilmService {
      * @return Страница с карточками фильмов
      */
     @Transactional
-    public Page<ShortFilmInfo> getShortFilmInfo(String genreName, Pageable pageable) {
-        Specification<ShortFilmInfo> genreFilter = (root, query, criteriaBuilder) -> {
+    public Page<ShortFilmInfoDto> getShortFilmInfo(String genreName, Pageable pageable) {
+        Specification<ShortFilmInfoDto> genreFilter = (root, query, criteriaBuilder) -> {
             if (genreName != null && !genreName.isEmpty()) {
                 Join<Film, Genre> genreJoin = root.join("genre");
                 return criteriaBuilder.equal(genreJoin.get("genreName"), genreName);
@@ -85,12 +75,12 @@ public class FilmService {
         };
         return filmRepository.findAll(genreFilter, pageable).map(film -> {
 
-            ShortFilmInfo shortFilmInfo = FilmMapper.MAPPER.toShortFilmDto(film);
+            ShortFilmInfoDto shortFilmInfoDto = FilmMapper.MAPPER.toShortFilmDto(film);
             if (film.getImagesList() != null && !film.getImagesList().isEmpty()) {
                 ImageDto imageDto = FilmMapper.MAPPER.toImageDto(film.getImagesList().get(0));
-                shortFilmInfo.setImagesList(Collections.singletonList(imageDto));
+                shortFilmInfoDto.setImagesList(Collections.singletonList(imageDto));
             }
-            return shortFilmInfo;
+            return shortFilmInfoDto;
         });
     }
 
@@ -100,7 +90,7 @@ public class FilmService {
      * @return Фильм
      */
     @Transactional
-    public FilmDto createFilm(SaveFilm newFilm) {
+    public FilmDto createFilm(SaveFilmDto newFilm) {
         Film film = FilmMapper.MAPPER.toEntity(newFilm);
         film = filmRepository.save(film);
 
@@ -123,7 +113,11 @@ public class FilmService {
             List<Image> imagesList = new ArrayList<>();
             images.forEach(file -> {
                 String imageUrl = bucketName +"/" + file.getOriginalFilename();
-                Image image = new Image(film.getId(), file.getOriginalFilename(), imageUrl);
+                Image image = Image.builder()
+                        .film(film)
+                        .imageName(file.getOriginalFilename())
+                        .imageUrl(imageUrl)
+                        .build();
                 imagesList.add(image);
             });
             film.setImagesList(imagesList);
@@ -143,7 +137,11 @@ public class FilmService {
             List<Video> videosList = new ArrayList<>();
             videos.forEach(file -> {
                 String videoUrl = bucketName +"/" + file.getOriginalFilename();
-                Video video = new Video(film.getId(), file.getOriginalFilename(), videoUrl);
+                Video video = Video.builder()
+                        .film(film)
+                        .traillerName(file.getOriginalFilename())
+                        .traillerUrl(videoUrl)
+                        .build();
                 videosList.add(video);
             });
             film.setVideosList(videosList);
@@ -158,11 +156,18 @@ public class FilmService {
      * @return Обновленный фильм
      */
     @Transactional
-    public FilmDto updateFilm(Long filmId, SaveFilm updatedFilm) {
-        Film film = findById(filmId);
-        FilmMapper.MAPPER.updateFilm(updatedFilm, film);
-        filmRepository.save(film);
-        return FilmMapper.MAPPER.toFilmDto(film);
+    public FilmDto updateFilm(Long filmId, SaveFilmDto updatedFilm) {
+        try {
+            Film film = findById(filmId);
+            FilmMapper.MAPPER.updateFilm(updatedFilm, film);
+            filmRepository.save(film);
+            return FilmMapper.MAPPER.toFilmDto(film);
+        }
+        catch (BusinessException e) {
+            log.error("Ошибка при обновлении данных фильма: {}", e.getMessage());
+            throw new BusinessException("Ошибка при обновлении данных фильма: {}", e.getMessage());
+        }
+
     }
 
     /**

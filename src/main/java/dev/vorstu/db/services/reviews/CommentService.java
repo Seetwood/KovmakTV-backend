@@ -5,10 +5,11 @@ import dev.vorstu.db.entities.reviews.Comment;
 import dev.vorstu.db.repositories.CommentRepository;
 import dev.vorstu.db.services.films.UserService;
 import dev.vorstu.dto.CommentDto;
+import dev.vorstu.exception.BusinessException;
 import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.CommentMapper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -19,11 +20,10 @@ import java.security.Principal;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class CommentService {
-    @Autowired
-    private CommentRepository commentRepository;
-    @Autowired
-    private UserService userService;
+    private final CommentRepository commentRepository;
+    private final UserService userService;
 
     /**
      * Создание нового комментария
@@ -33,13 +33,19 @@ public class CommentService {
      * @param sender - Пользователь, отправивший комментарий
      */
     public void createComment(Long reviewId, Long parentCommentId, CommentDto commentDto, Principal sender) {
-        AuthUserEntity senderId = userService.getUserByUsername(sender.getName());
-
-        Comment newComment = CommentMapper.MAPPER.toEntity(commentDto);
-        newComment.setSenderId(senderId.getId());
-        newComment.setReviewId(reviewId);
-        newComment.setParentCommentId(parentCommentId);
-        commentRepository.save(newComment);
+        try {
+            AuthUserEntity senderId = userService.getUserByUsername(sender.getName());
+            Comment newComment = CommentMapper.MAPPER.toEntity(commentDto);
+            newComment.setSenderId(senderId.getId());
+            newComment.setReviewId(reviewId);
+            newComment.setParentCommentId(parentCommentId);
+            commentRepository.save(newComment);
+            log.info("Новый комментарий успешно создан: {}", commentDto);
+        }
+        catch (BusinessException e) {
+            log.error("Ошибка при создании нового комментария: {}", e.getMessage());
+            throw new BusinessException("Ошибка при создании нового комментария: {}", e.getMessage());
+        }
     }
 
     /**
@@ -48,8 +54,15 @@ public class CommentService {
      */
     @Transactional
     public void deleteComment(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
-        commentRepository.deleteById(comment.getId());
+        try {
+            Comment comment = commentRepository.findById(commentId)
+                    .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+            commentRepository.deleteById(comment.getId());
+            log.info("Комментарий с идентификатором {} успешно удален.", commentId);
+        }
+        catch (BusinessException e) {
+            log.error("Ошибка при удалении комментария: {}", e.getMessage());
+            throw new BusinessException("Ошибка при удалении комментария: {}", e.getMessage());
+        }
     }
 }

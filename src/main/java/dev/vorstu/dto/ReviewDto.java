@@ -1,11 +1,17 @@
 package dev.vorstu.dto;
 
 import dev.vorstu.db.enums.ReviewStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReviewDto {
     /** Идентификатор рецензии */
     private Long id;
