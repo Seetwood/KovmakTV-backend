@@ -1,11 +1,17 @@
 package dev.vorstu.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Дто для регистрации нового пользователя
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserSignUpDto {
     /** Идентификатор пользователя */
     private Long id;

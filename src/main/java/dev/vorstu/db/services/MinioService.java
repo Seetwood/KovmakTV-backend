@@ -7,6 +7,7 @@ import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class MinioService {
     private final MinioClient minioClient;
 

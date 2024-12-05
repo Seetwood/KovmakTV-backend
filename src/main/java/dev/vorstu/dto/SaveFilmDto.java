@@ -1,6 +1,9 @@
 package dev.vorstu.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -9,7 +12,10 @@ import java.util.ArrayList;
  * Дто для создания нового фильма
  */
 @Data
-public class SaveFilm {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class SaveFilmDto {
     /** Идентификатор фильма */
     private Long id;
 

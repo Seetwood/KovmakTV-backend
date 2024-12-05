@@ -4,6 +4,7 @@ import dev.vorstu.db.entities.films.Film;
 import dev.vorstu.db.enums.ReviewStatus;
 import dev.vorstu.db.services.reviews.ReviewService;
 import dev.vorstu.dto.*;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,10 +20,10 @@ import java.util.List;
  * Контроллер, предназначенный для возаимодействия пользователей с рецензиями
  */
 @RestController
+@AllArgsConstructor
 @RequestMapping("api/")
 public class ReviewController {
-    @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
     @Transactional
     @GetMapping("reviews/")

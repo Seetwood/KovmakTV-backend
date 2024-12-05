@@ -8,7 +8,10 @@ import java.util.List;
  * Информация о фильме для карточки
  */
 @Data
-public class ShortFilmInfo {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ShortFilmInfoDto {
     /** Идентификатор фильма */
     private Long id;
 

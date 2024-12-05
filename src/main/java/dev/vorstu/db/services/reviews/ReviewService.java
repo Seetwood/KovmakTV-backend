@@ -14,7 +14,8 @@ import dev.vorstu.dto.ReviewDto;
 import dev.vorstu.exception.NotFoundException;
 import dev.vorstu.mappers.CommentMapper;
 import dev.vorstu.mappers.ReviewMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,17 +32,13 @@ import java.util.stream.Collectors;
 /**
  * Сервис для взаимодействия с жанрами фильмов
  */
+@Slf4j
 @Service
+@AllArgsConstructor
 public class ReviewService {
 
-    @Autowired
-    ReviewRepository reviewRepository;
-    @Autowired
-    AuthUserRepository authUserRepository;
-    @Autowired
-    UserService userService;
-    @Autowired
-    FilmService filmService;
+    private final ReviewRepository reviewRepository;
+    private final UserService userService;
 
     /**
      * Найти рецензии по идентификатору фильма и пользователя
